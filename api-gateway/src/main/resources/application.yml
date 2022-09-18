@@ -1,0 +1,21 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: apt-gateway
+  zipkin:
+    base-url: http://localhost:9411
+  cloud:
+    gateway:
+      routes:
+        - id: coin
+          uri: lb://COIN
+          predicates:
+            - Path=/api/v1/coins/**
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+    fetch-registry: true
+    register-with-eureka: true
