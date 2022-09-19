@@ -61,7 +61,12 @@ public class CoinService {
             List<CoinResponse> coinResponses = objectMapper.readValue(responseEntity.getBody(), new TypeReference<List<CoinResponse>>() {
             });
 
-            return coinResponses.stream().parallel().map(item -> getCoin(item.getId())).collect(Collectors.toList());
+            return coinResponses.stream().parallel().map(item -> {
+                CoinDtoResponse coinDtoResponse = coinMapper.toCoinDtoResponse(item);
+                CoinDtoResponse res =  getCoin(item.getId());
+                coinDtoResponse.setDescription(res.getDescription());
+                return coinDtoResponse;
+            }).collect(Collectors.toList());
         } catch (HttpClientErrorException e) {
             log.error("Error call api coinGecko: {}", e.getMessage());
             throw e;
