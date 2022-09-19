@@ -22,6 +22,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @Service
@@ -59,7 +60,15 @@ public class CoinService {
             ResponseEntity<String> responseEntity = restTemplate.exchange(urlTemplate, HttpMethod.GET, new HttpEntity<>(null, headers), String.class, params);
             List<CoinResponse> coinResponses = objectMapper.readValue(responseEntity.getBody(), new TypeReference<List<CoinResponse>>() {
             });
-            return coinMapper.toListCoinDtoResponse(coinResponses);
+
+            return coinResponses.stream().map((item) -> {
+                CoinDtoResponse coinDtoResponse = coinMapper.toCoinDtoResponse(item);
+                CoinDtoResponse response = getCoin(item.getId());
+                coinDtoResponse.setDescription(response.getDescription());
+                coinDtoResponse.setTrade_url(response.getTrade_url());
+                return coinDtoResponse;}
+            ).collect(Collectors.toList());
+
         } catch (HttpClientErrorException e) {
             log.error("Error call api coinGecko: {}", e.getMessage());
             throw e;
@@ -86,6 +95,7 @@ public class CoinService {
             CoinResponse coinResponses = objectMapper.readValue(responseEntity.getBody(), CoinResponse.class);
             CoinDtoResponse coinDtoResponse = coinMapper.toCoinDtoResponse(coinResponses);
             coinDtoResponse.setDescription(coinResponses.getDescription().getEn());
+            coinDtoResponse.setTrade_url(coinResponses.getTickers().get(0).getTrade_url());
             return coinDtoResponse;
         } catch (HttpClientErrorException e) {
             log.error("Error call api coinGecko: {}", e.getMessage());
