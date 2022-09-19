@@ -22,6 +22,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @Service
@@ -59,7 +60,8 @@ public class CoinService {
             ResponseEntity<String> responseEntity = restTemplate.exchange(urlTemplate, HttpMethod.GET, new HttpEntity<>(null, headers), String.class, params);
             List<CoinResponse> coinResponses = objectMapper.readValue(responseEntity.getBody(), new TypeReference<List<CoinResponse>>() {
             });
-            return coinMapper.toListCoinDtoResponse(coinResponses);
+
+            return coinResponses.stream().parallel().map(item -> getCoin(item.getId())).collect(Collectors.toList());
         } catch (HttpClientErrorException e) {
             log.error("Error call api coinGecko: {}", e.getMessage());
             throw e;

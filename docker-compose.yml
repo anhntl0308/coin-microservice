@@ -1,6 +1,6 @@
 services:
   zipkin:
     image: openzipkin/zipkin
-    container_name: zipkin
+    container_name: zipkin-coin
     ports:
       - "9411:9411"
