@@ -6,16 +6,18 @@ import com.lanh.coin.config.CoinGeckoConfig;
 import com.lanh.coin.constant.CoinConstant;
 import com.lanh.coin.dto.CoinDtoRequest;
 import com.lanh.coin.dto.CoinDtoResponse;
+import com.lanh.coin.entity.Coin;
+import com.lanh.coin.mapper.CoinDtoMapper;
 import com.lanh.coin.mapper.CoinMapper;
 import com.lanh.coin.models.CoinRequest;
 import com.lanh.coin.models.CoinResponse;
+import com.lanh.coin.repository.CoinRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -31,7 +33,9 @@ public class CoinService {
     private final RestTemplate restTemplate;
     private final CoinGeckoConfig coinGeckoConfig;
     private final ObjectMapper objectMapper;
+    private final CoinDtoMapper coinDtoMapper;
     private final CoinMapper coinMapper;
+    private final CoinRepository coinRepository;
 
     public List<CoinDtoResponse> getAll(CoinDtoRequest request) {
 
@@ -62,16 +66,23 @@ public class CoinService {
             });
 
             return coinResponses.stream().map((item) -> {
-                CoinDtoResponse coinDtoResponse = coinMapper.toCoinDtoResponse(item);
+                CoinDtoResponse coinDtoResponse = coinDtoMapper.toCoinDtoResponse(item);
                 CoinDtoResponse response = getCoin(item.getId());
                 coinDtoResponse.setDescription(response.getDescription());
                 coinDtoResponse.setTrade_url(response.getTrade_url());
+                Coin coin = coinMapper.toCoin(coinDtoResponse);
+                if(coinDtoResponse.getImage() instanceof String){
+                    coin.setImage(String.valueOf(coinDtoResponse.getImage()));
+                }
+                coin.setId(item.getId());
+                coinRepository.save(coin);
                 return coinDtoResponse;}
             ).collect(Collectors.toList());
 
         } catch (HttpClientErrorException e) {
             log.error("Error call api coinGecko: {}", e.getMessage());
-            throw e;
+            // TODO: viết filter ở đây rồi return về cái coinDtoResponse
+
         } catch (Exception e) {
             log.error("Error call api coinGecko: {}", e.getMessage());
             throw new RuntimeException();
@@ -93,7 +104,7 @@ public class CoinService {
         try {
             ResponseEntity<String> responseEntity = restTemplate.exchange(coinUrl, HttpMethod.GET, new HttpEntity<>(null, headers), String.class, params);
             CoinResponse coinResponses = objectMapper.readValue(responseEntity.getBody(), CoinResponse.class);
-            CoinDtoResponse coinDtoResponse = coinMapper.toCoinDtoResponse(coinResponses);
+            CoinDtoResponse coinDtoResponse = coinDtoMapper.toCoinDtoResponse(coinResponses);
             coinDtoResponse.setDescription(coinResponses.getDescription().getEn());
             coinDtoResponse.setTrade_url(coinResponses.getTickers().get(0).getTrade_url());
             return coinDtoResponse;
