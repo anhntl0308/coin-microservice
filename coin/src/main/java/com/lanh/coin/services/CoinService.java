@@ -82,7 +82,7 @@ public class CoinService {
         } catch (HttpClientErrorException e) {
             log.error("Error call api coinGecko: {}", e.getMessage());
             // TODO: viết filter ở đây rồi return về cái coinDtoResponse
-
+            return null;
         } catch (Exception e) {
             log.error("Error call api coinGecko: {}", e.getMessage());
             throw new RuntimeException();
