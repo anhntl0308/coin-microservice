@@ -4,3 +4,41 @@ services:
     container_name: zipkin-coin
     ports:
       - "9411:9411"
+  postgres:
+    container_name: postgres-coin
+    image: postgres
+    environment:
+      POSTGRES_USER: lanh0308
+      POSTGRES_PASSWORD: lanh0308
+      PGDATA: /data/postgres
+    volumes:
+      - postgres:/data/postgres
+    ports:
+      - "5432:5432"
+    networks:
+      - postgres
+    restart: unless-stopped
+
+  pgadmin:
+    container_name: pgadmin-coin
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: anhntl0308@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: lanh0308
+    volumes:
+      - pgadmin:/var/lib/pgadmin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - postgres
+    restart: unless-stopped
+
+networks:
+  postgres:
+   driver: bridge
+
+volumes:
+  postgres:
+  pgadmin:
