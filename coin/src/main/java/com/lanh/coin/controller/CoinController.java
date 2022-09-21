@@ -15,7 +15,7 @@ public class CoinController {
     private final CoinService coinService;
 
     @GetMapping
-    public List<CoinDtoResponse> getAllCoins(@ModelAttribute CoinDtoRequest coinDtoRequest){
+    public List<CoinDtoResponse> getAllCoins(@RequestBody CoinDtoRequest coinDtoRequest){
         return coinService.getAll(coinDtoRequest);
     }
 
