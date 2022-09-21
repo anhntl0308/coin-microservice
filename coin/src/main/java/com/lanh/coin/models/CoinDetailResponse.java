@@ -13,8 +13,6 @@ public class CoinDetailResponse {
     private String symbol;
     private String name;
     private Image image;
-    private BigDecimal current_price;
-    private BigDecimal price_change_percentage_24h;
     private Description description;
     private ArrayList<Tickers> tickers;
 

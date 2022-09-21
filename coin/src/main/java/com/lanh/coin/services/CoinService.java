@@ -71,6 +71,8 @@ public class CoinService {
 
             return coinResponses.stream().map((item) -> {
                 CoinDtoResponse response = getCoin(item.getId());
+                response.setCurrent_price(item.getCurrent_price());
+                response.setPrice_change_percentage_24h(item.getPrice_change_percentage_24h());
                 Coin coin = new Coin();
                 coin.setId(new Coin.CoinId(item.getId(), request.getCurrency().toUpperCase()));
                 try {
